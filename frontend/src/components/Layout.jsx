@@ -7,35 +7,12 @@ import './Layout.css';
 
 // Khan Shamman Logo Component
 const Logo = () => (
-  <svg viewBox="0 0 180 50" className="brand-logo">
-    <defs>
-      <linearGradient id="logoGold" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor:'#d4a574'}}/>
-        <stop offset="50%" style={{stopColor:'#c9956c'}}/>
-        <stop offset="100%" style={{stopColor:'#b8845f'}}/>
-      </linearGradient>
-      <linearGradient id="leafGreen" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor:'#6b8e5a'}}/>
-        <stop offset="100%" style={{stopColor:'#4a6741'}}/>
-      </linearGradient>
-    </defs>
-    
-    {/* Decorative leaf left */}
-    <path d="M8 25 Q2 18 8 12 Q12 17 10 22 Q13 26 8 25" fill="url(#leafGreen)" opacity="0.8"/>
-    
-    {/* Stylized K */}
-    <text x="25" y="32" fontFamily="'Cormorant Garamond', Georgia, serif" fontSize="28" fontWeight="700" fill="url(#logoGold)">K</text>
-    
-    {/* Decorative dot */}
-    <circle cx="42" cy="30" r="2" fill="url(#logoGold)"/>
-    
-    {/* Brand name */}
-    <text x="50" y="24" fontFamily="'Cormorant Garamond', Georgia, serif" fontSize="14" fontWeight="600" fill="url(#logoGold)" letterSpacing="2">KHAN</text>
-    <text x="50" y="38" fontFamily="'Cormorant Garamond', Georgia, serif" fontSize="14" fontWeight="600" fill="url(#logoGold)" letterSpacing="2">SHAMMAN</text>
-    
-    {/* Decorative leaf right */}
-    <path d="M140 25 Q146 18 140 12 Q136 17 138 22 Q135 26 140 25" fill="url(#leafGreen)" opacity="0.8"/>
-  </svg>
+  <img 
+    src="/khanshamman_logo_transparent.png" 
+    alt="Khan Shamman" 
+    className="brand-logo"
+    style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+  />
 );
 
 const Layout = () => {

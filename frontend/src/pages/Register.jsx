@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom';
 import api from '../services/api';
 import './Auth.css';
 
+// Khan Shamman Logo Component for Auth pages
+const AuthLogo = () => (
+  <img 
+    src="/khanshamman_logo_transparent.png" 
+    alt="Khan Shamman" 
+    className="auth-brand-logo"
+    style={{ height: '80px', width: 'auto', marginBottom: '1rem' }}
+  />
+);
+
 const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
@@ -60,7 +70,7 @@ const Register = () => {
         
         <div className="auth-card">
           <div className="auth-header">
-            <h1 className="auth-logo">OrderFlow</h1>
+            <AuthLogo />
             <p className="auth-subtitle">Registration Submitted</p>
           </div>
 
@@ -87,7 +97,7 @@ const Register = () => {
       
       <div className="auth-card">
         <div className="auth-header">
-          <h1 className="auth-logo">OrderFlow</h1>
+          <AuthLogo />
           <p className="auth-subtitle">Register as Sales Representative</p>
         </div>
 

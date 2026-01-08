@@ -5,32 +5,12 @@ import './Auth.css';
 
 // Khan Shamman Logo Component for Auth pages
 const AuthLogo = () => (
-  <svg viewBox="0 0 200 80" className="auth-brand-logo">
-    <defs>
-      <linearGradient id="authGold" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor:'#d4a574'}}/>
-        <stop offset="50%" style={{stopColor:'#c9956c'}}/>
-        <stop offset="100%" style={{stopColor:'#b8845f'}}/>
-      </linearGradient>
-      <linearGradient id="authLeaf" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor:'#6b8e5a'}}/>
-        <stop offset="100%" style={{stopColor:'#4a6741'}}/>
-      </linearGradient>
-    </defs>
-    
-    {/* Decorative leaves */}
-    <path d="M30 40 Q15 28 30 18 Q40 28 35 36 Q42 44 30 40" fill="url(#authLeaf)" opacity="0.8"/>
-    <path d="M170 40 Q185 28 170 18 Q160 28 165 36 Q158 44 170 40" fill="url(#authLeaf)" opacity="0.8"/>
-    
-    {/* Main K */}
-    <text x="100" y="42" fontFamily="'Cormorant Garamond', Georgia, serif" fontSize="48" fontWeight="700" fill="url(#authGold)" textAnchor="middle">K</text>
-    
-    {/* Brand name */}
-    <text x="100" y="62" fontFamily="'Cormorant Garamond', Georgia, serif" fontSize="16" fontWeight="600" fill="url(#authGold)" textAnchor="middle" letterSpacing="4">KHAN SHAMMAN</text>
-    
-    {/* Tagline */}
-    <text x="100" y="76" fontFamily="'DM Sans', sans-serif" fontSize="8" fill="#666" textAnchor="middle" letterSpacing="2">BEAUTY & CARE</text>
-  </svg>
+  <img 
+    src="/khanshamman_logo_transparent.png" 
+    alt="Khan Shamman" 
+    className="auth-brand-logo"
+    style={{ height: '80px', width: 'auto', marginBottom: '1rem' }}
+  />
 );
 
 const Login = () => {
