@@ -6,7 +6,12 @@ import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const dbPath = join(__dirname, '../../database.sqlite');
+
+// Use persistent disk path on Render, otherwise use local path
+const DATA_DIR = process.env.NODE_ENV === 'production' 
+  ? '/opt/render/project/src/data' 
+  : join(__dirname, '../..');
+const dbPath = join(DATA_DIR, 'database.sqlite');
 
 let db;
 
