@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4a574"/>
+      <stop offset="100%" style="stop-color:#b8845f"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main circle -->
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#d4a574" stroke-width="2"/>
+  
+  <!-- Dotted circle border -->
+  <g fill="#d4a574">
+    <!-- Top dots -->
+    <circle cx="100" cy="12" r="3"/>
+    <circle cx="120" cy="14" r="3"/>
+    <circle cx="140" cy="20" r="3"/>
+    <circle cx="158" cy="30" r="3"/>
+    <circle cx="173" cy="45" r="3"/>
+    <circle cx="184" cy="62" r="3"/>
+    <circle cx="190" cy="82" r="3"/>
+    <circle cx="192" cy="100" r="3"/>
+    <circle cx="190" cy="118" r="3"/>
+    <circle cx="184" cy="138" r="3"/>
+    <circle cx="173" cy="155" r="3"/>
+    <circle cx="158" cy="170" r="3"/>
+    <circle cx="140" cy="180" r="3"/>
+    <circle cx="120" cy="186" r="3"/>
+    <circle cx="100" cy="188" r="3"/>
+    <circle cx="80" cy="186" r="3"/>
+    <circle cx="60" cy="180" r="3"/>
+    <circle cx="42" cy="170" r="3"/>
+    <circle cx="27" cy="155" r="3"/>
+    <circle cx="16" cy="138" r="3"/>
+    <circle cx="10" cy="118" r="3"/>
+    <circle cx="8" cy="100" r="3"/>
+    <circle cx="10" cy="82" r="3"/>
+    <circle cx="16" cy="62" r="3"/>
+    <circle cx="27" cy="45" r="3"/>
+    <circle cx="42" cy="30" r="3"/>
+    <circle cx="60" cy="20" r="3"/>
+    <circle cx="80" cy="14" r="3"/>
+  </g>
+  
+  <!-- Top banner ribbon -->
+  <path d="M45 55 L50 45 L150 45 L155 55 L150 65 L50 65 Z" fill="#d4a574"/>
+  <path d="M30 50 L50 45 L50 65 L35 60 Z" fill="#c9956c"/>
+  <path d="M170 50 L150 45 L150 65 L165 60 Z" fill="#c9956c"/>
+  
+  <!-- Banner text -->
+  <text x="55" y="42" font-family="Georgia, serif" font-size="9" fill="#d4a574" font-style="italic">Khan</text>
+  <text x="135" y="42" font-family="Georgia, serif" font-size="9" fill="#d4a574" font-style="italic">Shamman</text>
+  
+  <!-- Main banner text -->
+  <text x="100" y="60" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#0a0a0a" text-anchor="middle">SOAP</text>
+  
+  <!-- Central soap illustration - simplified -->
+  <g transform="translate(100, 105)">
+    <!-- Bucket/container -->
+    <ellipse cx="0" cy="-15" rx="20" ry="8" fill="none" stroke="#d4a574" stroke-width="1.5"/>
+    <path d="M-20 -15 L-18 15 Q0 25 18 15 L20 -15" fill="none" stroke="#d4a574" stroke-width="1.5"/>
+    <path d="M-15 -20 Q0 -30 15 -20" fill="none" stroke="#d4a574" stroke-width="1.5"/>
+    
+    <!-- Soap bar -->
+    <rect x="-25" y="20" width="50" height="15" rx="3" fill="none" stroke="#d4a574" stroke-width="1.5"/>
+    <rect x="-22" y="23" width="44" height="9" rx="2" fill="none" stroke="#d4a574" stroke-width="0.5"/>
+    
+    <!-- Bubbles -->
+    <circle cx="-30" cy="5" r="6" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="-35" cy="-5" r="4" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="-25" cy="-10" r="5" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="30" cy="5" r="6" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="35" cy="-5" r="4" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="25" cy="-10" r="5" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="0" cy="-35" r="4" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="8" cy="-30" r="3" fill="none" stroke="#d4a574" stroke-width="1"/>
+    <circle cx="-8" cy="-32" r="3" fill="none" stroke="#d4a574" stroke-width="1"/>
+  </g>
+  
+  <!-- Laurel branches left -->
+  <g fill="none" stroke="#d4a574" stroke-width="1.2">
+    <path d="M35 90 Q40 100 35 110"/>
+    <path d="M35 90 Q28 95 30 85"/>
+    <path d="M35 95 Q28 100 30 90"/>
+    <path d="M35 100 Q28 105 30 95"/>
+    <path d="M35 105 Q28 110 30 100"/>
+    <path d="M35 110 Q28 115 30 105"/>
+    <path d="M35 115 Q30 125 40 130"/>
+  </g>
+  
+  <!-- Laurel branches right -->
+  <g fill="none" stroke="#d4a574" stroke-width="1.2">
+    <path d="M165 90 Q160 100 165 110"/>
+    <path d="M165 90 Q172 95 170 85"/>
+    <path d="M165 95 Q172 100 170 90"/>
+    <path d="M165 100 Q172 105 170 95"/>
+    <path d="M165 105 Q172 110 170 100"/>
+    <path d="M165 110 Q172 115 170 105"/>
+    <path d="M165 115 Q170 125 160 130"/>
+  </g>
+  
+  <!-- Bottom curved text "Khan Shamman" -->
+  <defs>
+    <path id="bottomCurve" d="M 40 160 Q 100 190 160 160" fill="none"/>
+  </defs>
+  <text font-family="Brush Script MT, cursive" font-size="22" fill="#d4a574">
+    <textPath href="#bottomCurve" startOffset="50%" text-anchor="middle">Khan Shamman</textPath>
+  </text>
+</svg>
