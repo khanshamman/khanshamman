@@ -6,7 +6,7 @@ import './Auth.css';
 // Khan Shamman Logo Component for Auth pages
 const AuthLogo = () => (
   <img 
-    src="/khanshamman_logo_transparent.png" 
+    src="/logo.svg" 
     alt="Khan Shamman" 
     className="auth-brand-logo"
     style={{ height: '80px', width: 'auto', marginBottom: '1rem' }}
