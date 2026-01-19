@@ -8,10 +8,16 @@ import './Layout.css';
 // Khan Shamman Logo Component
 const Logo = () => (
   <img 
-    src="/logo.svg" 
+    src="/khanshamman_new_logo.jpeg" 
     alt="Khan Shamman" 
     className="brand-logo"
-    style={{ height: '100px', width: 'auto', objectFit: 'contain' }}
+    style={{ 
+      height: '100px', 
+      width: 'auto', 
+      objectFit: 'contain', 
+      borderRadius: '50%',
+      mixBlendMode: 'screen'
+    }}
   />
 );
 
