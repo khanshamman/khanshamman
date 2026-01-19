@@ -435,15 +435,21 @@ const SalesNewOrder = () => {
                             −
                           </button>
                           <input
-                            type="number"
-                            min="1"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             value={item.quantity}
                             onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0;
-                              if (val > 0) {
-                                updateQuantity(item.product_id, val);
+                              const inputVal = e.target.value;
+                              // Allow empty input or valid numbers
+                              if (inputVal === '' || /^\d+$/.test(inputVal)) {
+                                const val = inputVal === '' ? 1 : parseInt(inputVal);
+                                if (val > 0) {
+                                  updateQuantity(item.product_id, val);
+                                }
                               }
                             }}
+                            onFocus={(e) => e.target.select()}
                             className="quantity-input"
                           />
                           <button
