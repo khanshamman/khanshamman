@@ -1,160 +1,150 @@
-import initSqlJs from 'sql.js';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { run, queryAll, saveDatabase, initDatabase } from '../config/database.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const dbPath = join(__dirname, '../../database.sqlite');
+// Initialize database first
+await initDatabase();
 
+// All products with wholesale and retail prices
 const products = [
-    // Hair Mist
-    { name: 'Hair Mist - White Angel', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Blooming Rose', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Green Tea', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Coconut Milk Rose', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Paradise', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Papaya', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Rose Island', category: 'Hair Mist', price: 0, stock_quantity: 100 },
-    { name: 'Hair Mist - Musk Al Tahara', category: 'Hair Mist', price: 0, stock_quantity: 100 },
+  // Body Oils
+  { name: 'Body oil passion fruits', category: 'Body Oil', wholesale_price: 6, price: 8.5 },
+  { name: 'Body oil green tea', category: 'Body Oil', wholesale_price: 6, price: 8.5 },
+  { name: 'Body oil coconut milk', category: 'Body Oil', wholesale_price: 6.5, price: 8.5 },
+  { name: 'Body oil papaya', category: 'Body Oil', wholesale_price: 6, price: 8.5 },
+  { name: 'Body oil Dove', category: 'Body Oil', wholesale_price: 6, price: 10 },
+  { name: 'Body oil rose vanilla', category: 'Body Oil', wholesale_price: 6.5, price: 8.5 },
+  { name: 'Body oil musk tahara', category: 'Body Oil', wholesale_price: 6.5, price: 8.5 },
+  { name: 'Body oil blooming rose', category: 'Body Oil', wholesale_price: 6.8, price: 8.5 },
+  { name: 'Body oil coconut milk rose', category: 'Body Oil', wholesale_price: 7.3, price: 11.3 },
 
-    // Body Mist
-    { name: 'Body Mist - White Angel', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Blooming Rose', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Green Tea', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Coconut Milk Rose', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Paradise', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Papaya', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Rose Island', category: 'Body Mist', price: 0, stock_quantity: 100 },
-    { name: 'Body Mist - Musk Al Tahara', category: 'Body Mist', price: 0, stock_quantity: 100 },
+  // Body Lotions
+  { name: 'Body lotion rose vanilla', category: 'Body Lotion', wholesale_price: 5.5, price: 7.3 },
+  { name: 'Body lotion musk tahara', category: 'Body Lotion', wholesale_price: 5, price: 7.3 },
+  { name: 'Body lotion coconut milk', category: 'Body Lotion', wholesale_price: 5, price: 7.3 },
+  { name: 'Body lotion passion fruits', category: 'Body Lotion', wholesale_price: 5.5, price: 7.3 },
+  { name: 'Body lotion Dove', category: 'Body Lotion', wholesale_price: 6, price: 7.3 },
+  { name: 'Body lotion green tea', category: 'Body Lotion', wholesale_price: 5, price: 7.3 },
+  { name: 'Body lotion blooming rose', category: 'Body Lotion', wholesale_price: 5, price: 8 },
+  { name: 'Body lotion coconut milk rose', category: 'Body Lotion', wholesale_price: 7.5, price: 11.5 },
 
-    // Body Oil
-    { name: 'Body Oil - Coconut Milk', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Blooming Rose', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Green Tea', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Coconut Milk Rose', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Dove', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Papaya', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Passion Fruit', category: 'Body Oil', price: 0, stock_quantity: 100 },
-    { name: 'Body Oil - Musk Al Tahara', category: 'Body Oil', price: 0, stock_quantity: 100 },
+  // Hair Mist
+  { name: 'Hair mist musk tahara', category: 'Hair Mist', wholesale_price: 5.5, price: 11.3 },
+  { name: 'Hair mist paradise', category: 'Hair Mist', wholesale_price: 5, price: 11.3 },
+  { name: 'Hair mist rose island', category: 'Hair Mist', wholesale_price: 10, price: 11.3 },
+  { name: 'Hair mist green tea', category: 'Hair Mist', wholesale_price: 10, price: 11.3 },
+  { name: 'Hair mist blooming rose', category: 'Hair Mist', wholesale_price: 10, price: 11.3 },
+  { name: 'Hair mist white angle', category: 'Hair Mist', wholesale_price: 10, price: 11.3 },
+  { name: 'Hair mist coconut milk rose', category: 'Hair Mist', wholesale_price: 10, price: 12 },
 
-    // Body Lotion (Bottle)
-    { name: 'Body Lotion (Bottle) - Coconut Milk', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Rose Vanilla', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Green Tea', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Coconut Milk Rose', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Dove', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Papaya', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Passion Fruit', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Musk Al Tahara', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Bottle) - Blooming Rose', category: 'Body Lotion (Bottle)', price: 0, stock_quantity: 100 },
+  // Body Mist
+  { name: 'Body mist musk tahara', category: 'Body Mist', wholesale_price: 10, price: 7 },
+  { name: 'Body mist paradise', category: 'Body Mist', wholesale_price: 10, price: 7 },
+  { name: 'Body mist rose island', category: 'Body Mist', wholesale_price: 14, price: 18 },
+  { name: 'Body mist blooming rose', category: 'Body Mist', wholesale_price: 3.75, price: 8.5 },
+  { name: 'Body mist white angle', category: 'Body Mist', wholesale_price: 3.75, price: 8.5 },
+  { name: 'Body mist green tea', category: 'Body Mist', wholesale_price: 3.75, price: 8.5 },
+  { name: 'Body mist coconut milk rose', category: 'Body Mist', wholesale_price: 3.75, price: 8.5 },
 
-    // Body Lotion (Glass / Luxury)
-    { name: 'Body Lotion (Luxury) - Coconut Milk', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Rose Vanilla', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Green Tea', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Coconut Milk Rose', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Dove', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Papaya', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Passion Fruit', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
-    { name: 'Body Lotion (Luxury) - Musk Al Tahara', category: 'Body Lotion (Luxury)', price: 0, stock_quantity: 100 },
+  // Diffusers
+  { name: 'Diffuser Fa', category: 'Diffuser', wholesale_price: 5, price: 7 },
+  { name: 'Diffuser Dove', category: 'Diffuser', wholesale_price: 5, price: 7 },
+  { name: 'Diffuser Tulip', category: 'Diffuser', wholesale_price: 5, price: 7 },
+  { name: 'Diffuser Blue wave', category: 'Diffuser', wholesale_price: 5, price: 7 },
 
-    // Hair Oil
-    { name: 'Hair Oil - Rosemary', category: 'Hair Oil', price: 0, stock_quantity: 100 },
+  // Air Refreshers
+  { name: 'Air refresher pine', category: 'Air Freshener', wholesale_price: 7, price: 11 },
+  { name: 'Air refresher Dove', category: 'Air Freshener', wholesale_price: 2.2, price: 5.5 },
+  { name: 'Air refresher Fa', category: 'Air Freshener', wholesale_price: 5, price: 5.5 },
+  { name: 'Air refresher Vanilla', category: 'Air Freshener', wholesale_price: 5.5, price: 5.5 },
+  { name: 'Air refresher lavender', category: 'Air Freshener', wholesale_price: 2.2, price: 3.5 },
+  { name: 'Air refresher green tea', category: 'Air Freshener', wholesale_price: 1.95, price: 3.5 },
 
-    // Hair Serum
-    { name: 'Hair Serum', category: 'Hair Serum', price: 0, stock_quantity: 100 },
+  // Soaps (130g)
+  { name: 'Soap Tulip (130g)', category: 'Soap (130g)', wholesale_price: 12, price: 18 },
+  { name: 'Soap Gar (130g)', category: 'Soap (130g)', wholesale_price: 2.2, price: 10 },
+  { name: 'Soap Coconut (130g)', category: 'Soap (130g)', wholesale_price: 2.2, price: 18 },
+  { name: 'Soap Oud (130g)', category: 'Soap (130g)', wholesale_price: 2.2, price: 15 },
+  { name: 'Soap Black seed (130g)', category: 'Soap (130g)', wholesale_price: 3.75, price: 5.5 },
+  { name: 'Soap jasmine (130g)', category: 'Soap (130g)', wholesale_price: 2.2, price: 3 },
 
-    // Hair Serum Perfume
-    { name: 'Hair Serum Perfume', category: 'Hair Serum Perfume', price: 0, stock_quantity: 100 },
+  // Soaps (78g)
+  { name: 'Soap Honey (78g)', category: 'Soap (78g)', wholesale_price: 1.95, price: 5.5 },
+  { name: 'Soap Black seed (78g)', category: 'Soap (78g)', wholesale_price: 1.95, price: 3 },
+  { name: 'Soap Oud (78g)', category: 'Soap (78g)', wholesale_price: 1.8, price: 3 },
+  { name: 'Soap jourry (78g)', category: 'Soap (78g)', wholesale_price: 1.8, price: 2.8 },
+  { name: 'Soap Babonij (78g)', category: 'Soap (78g)', wholesale_price: 1.95, price: 2.8 },
+  { name: 'Soap ikleel jaball (78g)', category: 'Soap (78g)', wholesale_price: 1.95, price: 3 },
+  { name: 'Soap Gar (78g)', category: 'Soap (78g)', wholesale_price: 1.8, price: 3 },
 
-    // Face Cream
-    { name: 'Face Cream - Shea Butter', category: 'Face Cream', price: 0, stock_quantity: 100 },
-    { name: 'Face Cream - Aloe Vera', category: 'Face Cream', price: 0, stock_quantity: 100 },
+  // Other Soaps
+  { name: 'Soap Louban Dakar', category: 'Soap', wholesale_price: 5, price: 8 },
 
-    // Face Gel
-    { name: 'Face Gel - Aloe Vera', category: 'Face Gel', price: 0, stock_quantity: 100 },
-    { name: 'Face Gel - Collagen', category: 'Face Gel', price: 0, stock_quantity: 100 },
-    { name: 'Face Gel - Lemon', category: 'Face Gel', price: 0, stock_quantity: 100 },
-    { name: 'Face Gel - Vitamin E', category: 'Face Gel', price: 0, stock_quantity: 100 },
-    { name: 'Face Gel - Vitamin C', category: 'Face Gel', price: 0, stock_quantity: 100 },
+  // Sets
+  { name: 'Set Soap 9 pcs', category: 'Sets', wholesale_price: 5, price: 7 },
+  { name: 'Set Soap 6 pcs (black)', category: 'Sets', wholesale_price: 3, price: 8.5 },
+  { name: 'Set (Soap + Toula)', category: 'Sets', wholesale_price: 4, price: 6 },
+  { name: 'Set Soap + oil', category: 'Sets', wholesale_price: 6, price: 8.5 },
 
-    // Soap
-    { name: 'Soap - Black Seed', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Rosemary', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Coconut', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Ghar', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Honey', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Oud', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Tulip', category: 'Soap', price: 0, stock_quantity: 100 },
-    { name: 'Soap - Chamomile', category: 'Soap', price: 0, stock_quantity: 100 },
+  // Hair & Skin
+  { name: 'Hair serum', category: 'Hair & Skincare', wholesale_price: 5, price: 7 },
+  { name: 'Hair oil rosemary', category: 'Hair & Skincare', wholesale_price: 6, price: 10 },
+  { name: 'Aloe Vera Night Cream', category: 'Hair & Skincare', wholesale_price: 7, price: 9 },
+  { name: 'Aloe Vera Night Gel', category: 'Hair & Skincare', wholesale_price: 7, price: 9 },
+  { name: 'Collagen Gel', category: 'Hair & Skincare', wholesale_price: 15, price: 20 },
+  { name: 'Collagen Gel Lemon', category: 'Hair & Skincare', wholesale_price: 18, price: 23 },
+  { name: 'Vitamin C Gel', category: 'Hair & Skincare', wholesale_price: 18, price: 23 },
+  { name: 'Vitamin E Gel', category: 'Hair & Skincare', wholesale_price: 18, price: 23 },
+  { name: 'Shea Butter Cream', category: 'Hair & Skincare', wholesale_price: 16, price: 20 },
 
-    // Air Freshener
-    { name: 'Air Freshener - Vanilla', category: 'Air Freshener', price: 0, stock_quantity: 100 },
-    { name: 'Air Freshener - Dove', category: 'Air Freshener', price: 0, stock_quantity: 100 },
-    { name: 'Air Freshener - Green Tea', category: 'Air Freshener', price: 0, stock_quantity: 100 },
+  // Other
+  { name: 'Soup Alarousa', category: 'Other', wholesale_price: 3.5, price: 5.5 },
+  { name: 'Shower gel', category: 'Other', wholesale_price: 3.5, price: 5 },
+  { name: 'Tanning oil', category: 'Other', wholesale_price: 5.5, price: 8 },
+  { name: 'Eye Brows Soap', category: 'Other', wholesale_price: 3, price: 5 },
+  { name: 'Shampoo', category: 'Other', wholesale_price: 4.5, price: 6.5 },
 ];
 
-async function seedProducts() {
-    const SQL = await initSqlJs();
-    
-    let db;
-    if (existsSync(dbPath)) {
-        const fileBuffer = readFileSync(dbPath);
-        db = new SQL.Database(fileBuffer);
-    } else {
-        console.error('Database file not found. Please start the backend server first to initialize the database.');
-        process.exit(1);
+export async function seedProducts() {
+  console.log('Starting product seed...');
+  
+  // Check if products already exist
+  const existingProducts = queryAll('SELECT COUNT(*) as count FROM products');
+  if (existingProducts[0].count > 0) {
+    console.log(`Database already has ${existingProducts[0].count} products.`);
+    const answer = process.argv.includes('--force');
+    if (!answer) {
+      console.log('Use --force flag to clear existing products and re-seed.');
+      return;
     }
-    
-    // Add category column if it doesn't exist
+    console.log('Clearing existing products...');
+    run('DELETE FROM products');
+  }
+
+  let added = 0;
+  for (const product of products) {
     try {
-        db.run('ALTER TABLE products ADD COLUMN category TEXT');
-    } catch (e) {
-        // Column might already exist
+      run(
+        `INSERT INTO products (name, description, category, price, wholesale_price, stock_quantity, active)
+         VALUES (?, ?, ?, ?, ?, ?, 1)`,
+        [
+          product.name,
+          product.category,
+          product.category,
+          product.price,
+          product.wholesale_price,
+          100 // Default stock
+        ]
+      );
+      added++;
+      console.log(`Added: ${product.name} - W: $${product.wholesale_price} | R: $${product.price}`);
+    } catch (error) {
+      console.error(`Failed to add ${product.name}:`, error.message);
     }
-    
-    console.log('Starting product seeding...\n');
-    
-    let inserted = 0;
-    let skipped = 0;
-    
-    for (const product of products) {
-        // Check if product already exists
-        const stmt = db.prepare('SELECT id FROM products WHERE name = ?');
-        stmt.bind([product.name]);
-        const exists = stmt.step();
-        stmt.free();
-        
-        if (exists) {
-            skipped++;
-            continue;
-        }
-        
-        db.run(
-            'INSERT INTO products (name, description, price, stock_quantity, category, active) VALUES (?, ?, ?, ?, ?, ?)',
-            [product.name, product.category, product.price, product.stock_quantity, product.category, 1]
-        );
-        inserted++;
-        console.log(`Added: ${product.name}`);
-    }
-    
-    // Save to file
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    writeFileSync(dbPath, buffer);
-    
-    console.log(`\n========================================`);
-    console.log(`Seeding complete!`);
-    console.log(`Products inserted: ${inserted}`);
-    console.log(`Products skipped (already exist): ${skipped}`);
-    console.log(`Total products in list: ${products.length}`);
-    console.log(`========================================`);
-    
-    db.close();
+  }
+
+  saveDatabase();
+  console.log(`\nSuccessfully added ${added} products!`);
 }
 
-seedProducts().catch(err => {
-    console.error('Error seeding products:', err);
-    process.exit(1);
-});
+// Run if called directly
+await seedProducts();
+process.exit(0);
