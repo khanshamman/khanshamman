@@ -8,7 +8,7 @@ import './Layout.css';
 // Khan Shamman Logo Component
 const Logo = () => (
   <img 
-    src="/khanshamman_new_logo.jpeg" 
+    src="/khanshamman_new_logo.png" 
     alt="Khan Shamman" 
     className="brand-logo"
     style={{ 
