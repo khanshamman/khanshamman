@@ -36,14 +36,28 @@ export const User = {
   },
 
   findApprovedUsers: async () => {
-    // Use COALESCE to handle cases where is_active column might not exist yet
     try {
-      return await queryAll('SELECT id, username, email, role, COALESCE(is_active, 1) as is_active, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', ['sales']);
+      // First try with is_active column
+      const users = await queryAll(
+        'SELECT id, username, email, role, COALESCE(is_active, 1) as is_active, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', 
+        ['sales']
+      );
+      console.log('Found approved users:', users?.length || 0);
+      return users || [];
     } catch (error) {
-      // Fallback if is_active column doesn't exist
-      console.log('Falling back to query without is_active:', error.message);
-      const users = await queryAll('SELECT id, username, email, role, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', ['sales']);
-      return users.map(u => ({ ...u, is_active: 1 }));
+      console.log('Query with is_active failed, trying fallback:', error.message);
+      try {
+        // Fallback without is_active
+        const users = await queryAll(
+          'SELECT id, username, email, role, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', 
+          ['sales']
+        );
+        console.log('Fallback found users:', users?.length || 0);
+        return (users || []).map(u => ({ ...u, is_active: 1 }));
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError.message);
+        return [];
+      }
     }
   },
 
