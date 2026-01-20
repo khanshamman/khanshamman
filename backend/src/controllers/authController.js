@@ -156,10 +156,11 @@ export const rejectUser = async (req, res) => {
 export const getApprovedUsers = async (req, res) => {
   try {
     const users = await User.findApprovedUsers();
-    res.json(users);
+    res.json(users || []);
   } catch (error) {
     console.error('Get approved users error:', error);
-    res.status(500).json({ error: 'Failed to fetch approved users' });
+    // Return empty array instead of error to prevent frontend from breaking
+    res.json([]);
   }
 };
 

@@ -20,15 +20,15 @@ export const User = {
   },
 
   findById: async (id) => {
-    return await queryOne('SELECT id, username, email, role, approved, is_active, created_at FROM users WHERE id = ?', [id]);
+    return await queryOne('SELECT id, username, email, role, approved, COALESCE(is_active, 1) as is_active, created_at FROM users WHERE id = ?', [id]);
   },
 
   findAll: async () => {
-    return await queryAll('SELECT id, username, email, role, approved, is_active, created_at FROM users');
+    return await queryAll('SELECT id, username, email, role, approved, COALESCE(is_active, 1) as is_active, created_at FROM users');
   },
 
   findAllSales: async () => {
-    return await queryAll('SELECT id, username, email, role, approved, is_active, created_at FROM users WHERE role = ? AND approved = 1', ['sales']);
+    return await queryAll('SELECT id, username, email, role, approved, COALESCE(is_active, 1) as is_active, created_at FROM users WHERE role = ? AND approved = 1', ['sales']);
   },
 
   findPendingUsers: async () => {
@@ -36,7 +36,15 @@ export const User = {
   },
 
   findApprovedUsers: async () => {
-    return await queryAll('SELECT id, username, email, role, is_active, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', ['sales']);
+    // Use COALESCE to handle cases where is_active column might not exist yet
+    try {
+      return await queryAll('SELECT id, username, email, role, COALESCE(is_active, 1) as is_active, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', ['sales']);
+    } catch (error) {
+      // Fallback if is_active column doesn't exist
+      console.log('Falling back to query without is_active:', error.message);
+      const users = await queryAll('SELECT id, username, email, role, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', ['sales']);
+      return users.map(u => ({ ...u, is_active: 1 }));
+    }
   },
 
   countPendingUsers: async () => {
