@@ -5,11 +5,15 @@ import {
   getProduct,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  seedProducts
 } from '../controllers/productController.js';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
+
+// Seed endpoint (protected by secret key)
+router.post('/seed', seedProducts);
 
 // Public routes (still require auth)
 router.get('/', authenticate, getAllProducts);
