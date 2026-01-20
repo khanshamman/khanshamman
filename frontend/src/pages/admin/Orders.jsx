@@ -8,6 +8,7 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', sales_user_id: '' });
   const [salesUsers, setSalesUsers] = useState([]);
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -48,6 +49,23 @@ const AdminOrders = () => {
       fetchOrders();
     } catch (error) {
       console.error('Failed to mark orders as read:', error);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeleting(orderId);
+    try {
+      await orderApi.delete(orderId);
+      fetchOrders();
+    } catch (error) {
+      console.error('Failed to delete order:', error);
+      alert('Failed to delete order: ' + (error.response?.data?.error || 'Unknown error'));
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -159,9 +177,18 @@ const AdminOrders = () => {
                     </td>
                     <td className="text-muted">{formatDate(order.created_at)}</td>
                     <td>
-                      <Link to={`/admin/orders/${order.id}`} className="btn btn-ghost btn-sm">
-                        View
-                      </Link>
+                      <div className="action-buttons">
+                        <Link to={`/admin/orders/${order.id}`} className="btn btn-ghost btn-sm">
+                          View
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="btn btn-danger btn-sm"
+                          disabled={deleting === order.id}
+                        >
+                          {deleting === order.id ? '...' : 'Delete'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

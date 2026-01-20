@@ -76,6 +76,18 @@ export const User = {
   },
 
   deleteUser: async (id) => {
+    // First, get all orders for this user
+    const orders = await queryAll('SELECT id FROM orders WHERE sales_user_id = ?', [id]);
+    
+    // Delete order items for each order
+    for (const order of orders) {
+      await run('DELETE FROM order_items WHERE order_id = ?', [order.id]);
+    }
+    
+    // Delete all orders for this user
+    await run('DELETE FROM orders WHERE sales_user_id = ?', [id]);
+    
+    // Finally, delete the user
     return await run('DELETE FROM users WHERE id = ? AND role != ?', [id, 'admin']);
   },
 
