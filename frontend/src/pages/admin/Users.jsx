@@ -15,17 +15,24 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const [pendingRes, approvedRes] = await Promise.all([
-        api.get('/auth/users/pending'),
-        api.get('/auth/users/approved')
-      ]);
+      // Fetch pending users
+      const pendingRes = await api.get('/auth/users/pending');
       setPendingUsers(pendingRes.data);
+    } catch (error) {
+      console.error('Failed to fetch pending users:', error);
+      setPendingUsers([]);
+    }
+    
+    try {
+      // Fetch approved users (separate try-catch so pending still works if this fails)
+      const approvedRes = await api.get('/auth/users/approved');
       setApprovedUsers(approvedRes.data);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch approved users:', error);
+      setApprovedUsers([]);
     }
+    
+    setLoading(false);
   };
 
   const handleApprove = async (userId) => {
