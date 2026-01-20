@@ -5,10 +5,10 @@ export const User = {
   create: async (username, email, password, role, approved = 0) => {
     const password_hash = bcrypt.hashSync(password, 10);
     const result = await run(
-      'INSERT INTO users (username, email, password_hash, role, approved) VALUES (?, ?, ?, ?, ?)',
-      [username, email, password_hash, role, approved]
+      'INSERT INTO users (username, email, password_hash, role, approved, is_active) VALUES (?, ?, ?, ?, ?, ?)',
+      [username, email, password_hash, role, approved, 1]
     );
-    return { id: result.lastInsertRowid, username, email, role, approved };
+    return { id: result.lastInsertRowid, username, email, role, approved, is_active: 1 };
   },
 
   findByEmail: async (email) => {
@@ -20,19 +20,23 @@ export const User = {
   },
 
   findById: async (id) => {
-    return await queryOne('SELECT id, username, email, role, approved, created_at FROM users WHERE id = ?', [id]);
+    return await queryOne('SELECT id, username, email, role, approved, is_active, created_at FROM users WHERE id = ?', [id]);
   },
 
   findAll: async () => {
-    return await queryAll('SELECT id, username, email, role, approved, created_at FROM users');
+    return await queryAll('SELECT id, username, email, role, approved, is_active, created_at FROM users');
   },
 
   findAllSales: async () => {
-    return await queryAll('SELECT id, username, email, role, approved, created_at FROM users WHERE role = ? AND approved = 1', ['sales']);
+    return await queryAll('SELECT id, username, email, role, approved, is_active, created_at FROM users WHERE role = ? AND approved = 1', ['sales']);
   },
 
   findPendingUsers: async () => {
     return await queryAll('SELECT id, username, email, role, created_at FROM users WHERE approved = 0 ORDER BY created_at DESC');
+  },
+
+  findApprovedUsers: async () => {
+    return await queryAll('SELECT id, username, email, role, is_active, created_at FROM users WHERE approved = 1 AND role = ? ORDER BY created_at DESC', ['sales']);
   },
 
   countPendingUsers: async () => {
@@ -47,6 +51,15 @@ export const User = {
 
   rejectUser: async (id) => {
     return await run('DELETE FROM users WHERE id = ? AND approved = 0', [id]);
+  },
+
+  deleteUser: async (id) => {
+    return await run('DELETE FROM users WHERE id = ? AND role != ?', [id, 'admin']);
+  },
+
+  updateUserStatus: async (id, isActive) => {
+    await run('UPDATE users SET is_active = ? WHERE id = ?', [isActive ? 1 : 0, id]);
+    return await User.findById(id);
   },
 
   validatePassword: (user, password) => {

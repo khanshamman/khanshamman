@@ -27,8 +27,19 @@ export async function initDatabase() {
         password_hash VARCHAR(255) NOT NULL,
         role VARCHAR(50) CHECK(role IN ('admin', 'sales')) NOT NULL,
         approved INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+
+    // Add is_active column if it doesn't exist (for existing databases)
+    await client.query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'is_active') THEN
+          ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1;
+        END IF;
+      END $$;
     `);
 
     await client.query(`

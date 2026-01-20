@@ -64,6 +64,11 @@ export const login = async (req, res) => {
       return res.status(403).json({ error: 'Your account is pending approval. Please wait for admin to approve your registration.' });
     }
 
+    // Check if user account is active
+    if (user.is_active === 0) {
+      return res.status(403).json({ error: 'Your account has been deactivated. Please contact the administrator.' });
+    }
+
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
     res.json({
@@ -145,5 +150,61 @@ export const rejectUser = async (req, res) => {
   } catch (error) {
     console.error('Reject user error:', error);
     res.status(500).json({ error: 'Failed to reject user' });
+  }
+};
+
+export const getApprovedUsers = async (req, res) => {
+  try {
+    const users = await User.findApprovedUsers();
+    res.json(users);
+  } catch (error) {
+    console.error('Get approved users error:', error);
+    res.status(500).json({ error: 'Failed to fetch approved users' });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Prevent deleting admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'Cannot delete admin accounts' });
+    }
+
+    await User.deleteUser(id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+};
+
+export const updateUserStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+    
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Prevent deactivating admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({ error: 'Cannot modify admin accounts' });
+    }
+
+    await User.updateUserStatus(id, is_active);
+    res.json({ message: `User ${is_active ? 'activated' : 'deactivated'} successfully` });
+  } catch (error) {
+    console.error('Update user status error:', error);
+    res.status(500).json({ error: 'Failed to update user status' });
   }
 };
