@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/auth.js';
 import { User } from '../models/User.js';
 
-export const authenticate = (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -13,7 +13,7 @@ export const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = User.findById(decoded.id);
+    const user = await User.findById(decoded.id);
     
     if (!user) {
       return res.status(401).json({ error: 'Invalid token. User not found.' });
@@ -39,4 +39,3 @@ export const requireSales = (req, res, next) => {
   }
   next();
 };
-

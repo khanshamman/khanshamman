@@ -1,8 +1,8 @@
 import { queryAll, queryOne, run } from '../config/database.js';
 
 export const Product = {
-  create: (data) => {
-    const result = run(
+  create: async (data) => {
+    const result = await run(
       `INSERT INTO products (name, description, price, wholesale_price, stock_quantity, image_url, category, active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -16,22 +16,22 @@ export const Product = {
         data.active !== undefined ? (data.active ? 1 : 0) : 1
       ]
     );
-    return Product.findById(result.lastInsertRowid);
+    return await Product.findById(result.lastInsertRowid);
   },
 
-  findById: (id) => {
-    return queryOne('SELECT * FROM products WHERE id = ?', [id]);
+  findById: async (id) => {
+    return await queryOne('SELECT * FROM products WHERE id = ?', [id]);
   },
 
-  findAll: () => {
-    return queryAll('SELECT * FROM products ORDER BY category, name');
+  findAll: async () => {
+    return await queryAll('SELECT * FROM products ORDER BY category, name');
   },
 
-  findActive: () => {
-    return queryAll('SELECT * FROM products WHERE active = 1 ORDER BY category, name');
+  findActive: async () => {
+    return await queryAll('SELECT * FROM products WHERE active = 1 ORDER BY category, name');
   },
 
-  update: (id, data) => {
+  update: async (id, data) => {
     const fields = [];
     const values = [];
 
@@ -68,14 +68,14 @@ export const Product = {
       values.push(data.active ? 1 : 0);
     }
 
-    if (fields.length === 0) return Product.findById(id);
+    if (fields.length === 0) return await Product.findById(id);
 
     values.push(id);
-    run(`UPDATE products SET ${fields.join(', ')} WHERE id = ?`, values);
-    return Product.findById(id);
+    await run(`UPDATE products SET ${fields.join(', ')} WHERE id = ?`, values);
+    return await Product.findById(id);
   },
 
-  delete: (id) => {
-    return run('DELETE FROM products WHERE id = ?', [id]);
+  delete: async (id) => {
+    return await run('DELETE FROM products WHERE id = ?', [id]);
   }
 };

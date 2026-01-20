@@ -1,9 +1,9 @@
 import { queryAll, queryOne, run, saveDatabase } from '../config/database.js';
 
 export const Order = {
-  create: (data, items) => {
+  create: async (data, items) => {
     // Create order
-    const orderResult = run(
+    const orderResult = await run(
       `INSERT INTO orders (sales_user_id, client_name, client_email, client_phone, client_location, total_amount, notes, status, admin_notified)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', 0)`,
       [
@@ -21,7 +21,7 @@ export const Order = {
     
     // Create order items
     for (const item of items) {
-      run(
+      await run(
         `INSERT INTO order_items (order_id, product_id, quantity, unit_price)
          VALUES (?, ?, ?, ?)`,
         [orderId, item.product_id, item.quantity, item.unit_price]
@@ -29,11 +29,11 @@ export const Order = {
     }
     
     saveDatabase();
-    return Order.findById(orderId);
+    return await Order.findById(orderId);
   },
 
-  findById: (id) => {
-    const order = queryOne(`
+  findById: async (id) => {
+    const order = await queryOne(`
       SELECT o.*, u.username as sales_username
       FROM orders o
       JOIN users u ON o.sales_user_id = u.id
@@ -42,7 +42,7 @@ export const Order = {
     
     if (!order) return null;
     
-    order.items = queryAll(`
+    order.items = await queryAll(`
       SELECT oi.*, p.name as product_name
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
@@ -52,7 +52,7 @@ export const Order = {
     return order;
   },
 
-  findAll: (filters = {}) => {
+  findAll: async (filters = {}) => {
     let query = `
       SELECT o.*, u.username as sales_username
       FROM orders o
@@ -72,11 +72,11 @@ export const Order = {
 
     query += ' ORDER BY o.created_at DESC';
 
-    return queryAll(query, params);
+    return await queryAll(query, params);
   },
 
-  findUnnotified: () => {
-    return queryAll(`
+  findUnnotified: async () => {
+    return await queryAll(`
       SELECT o.*, u.username as sales_username
       FROM orders o
       JOIN users u ON o.sales_user_id = u.id
@@ -85,26 +85,26 @@ export const Order = {
     `);
   },
 
-  countUnnotified: () => {
-    const result = queryOne('SELECT COUNT(*) as count FROM orders WHERE admin_notified = 0');
-    return result ? result.count : 0;
+  countUnnotified: async () => {
+    const result = await queryOne('SELECT COUNT(*) as count FROM orders WHERE admin_notified = 0');
+    return result ? parseInt(result.count) : 0;
   },
 
-  markAsNotified: (id) => {
-    return run('UPDATE orders SET admin_notified = 1 WHERE id = ?', [id]);
+  markAsNotified: async (id) => {
+    return await run('UPDATE orders SET admin_notified = 1 WHERE id = ?', [id]);
   },
 
-  markAllAsNotified: () => {
-    return run('UPDATE orders SET admin_notified = 1 WHERE admin_notified = 0');
+  markAllAsNotified: async () => {
+    return await run('UPDATE orders SET admin_notified = 1 WHERE admin_notified = 0');
   },
 
-  updateStatus: (id, status) => {
-    run('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
-    return Order.findById(id);
+  updateStatus: async (id, status) => {
+    await run('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
+    return await Order.findById(id);
   },
 
-  getOrderItems: (orderId) => {
-    return queryAll(`
+  getOrderItems: async (orderId) => {
+    return await queryAll(`
       SELECT oi.*, p.name as product_name
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
@@ -112,11 +112,11 @@ export const Order = {
     `, [orderId]);
   },
 
-  delete: (id) => {
+  delete: async (id) => {
     // Delete order items first (due to foreign key)
-    run('DELETE FROM order_items WHERE order_id = ?', [id]);
+    await run('DELETE FROM order_items WHERE order_id = ?', [id]);
     // Delete the order
-    run('DELETE FROM orders WHERE id = ?', [id]);
+    await run('DELETE FROM orders WHERE id = ?', [id]);
     saveDatabase();
     return { success: true };
   }

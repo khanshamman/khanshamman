@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/auth.js';
 
-export const register = (req, res) => {
+export const register = async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
 
@@ -16,16 +16,16 @@ export const register = (req, res) => {
     }
 
     // Check if user already exists
-    if (User.findByEmail(email)) {
+    if (await User.findByEmail(email)) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    if (User.findByUsername(username)) {
+    if (await User.findByUsername(username)) {
       return res.status(400).json({ error: 'Username already taken' });
     }
 
     // Create user with pending approval (approved = 0)
-    const user = User.create(username, email, password, role, 0);
+    const user = await User.create(username, email, password, role, 0);
 
     res.status(201).json({ 
       message: 'Registration submitted. Please wait for admin approval before logging in.',
@@ -37,7 +37,7 @@ export const register = (req, res) => {
   }
 };
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -46,9 +46,9 @@ export const login = (req, res) => {
     }
 
     // Try to find by email or username
-    let user = User.findByEmail(email);
+    let user = await User.findByEmail(email);
     if (!user) {
-      user = User.findByUsername(email);
+      user = await User.findByUsername(email);
     }
     
     if (!user) {
@@ -86,9 +86,9 @@ export const getMe = (req, res) => {
 };
 
 // Admin endpoints for user management
-export const getPendingUsers = (req, res) => {
+export const getPendingUsers = async (req, res) => {
   try {
-    const users = User.findPendingUsers();
+    const users = await User.findPendingUsers();
     res.json(users);
   } catch (error) {
     console.error('Get pending users error:', error);
@@ -96,9 +96,9 @@ export const getPendingUsers = (req, res) => {
   }
 };
 
-export const getPendingUsersCount = (req, res) => {
+export const getPendingUsersCount = async (req, res) => {
   try {
-    const count = User.countPendingUsers();
+    const count = await User.countPendingUsers();
     res.json({ count });
   } catch (error) {
     console.error('Get pending users count error:', error);
@@ -106,10 +106,10 @@ export const getPendingUsersCount = (req, res) => {
   }
 };
 
-export const approveUser = (req, res) => {
+export const approveUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = User.findById(id);
+    const user = await User.findById(id);
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -119,7 +119,7 @@ export const approveUser = (req, res) => {
       return res.status(400).json({ error: 'User is already approved' });
     }
 
-    const approvedUser = User.approveUser(id);
+    const approvedUser = await User.approveUser(id);
     res.json({ message: 'User approved successfully', user: approvedUser });
   } catch (error) {
     console.error('Approve user error:', error);
@@ -127,10 +127,10 @@ export const approveUser = (req, res) => {
   }
 };
 
-export const rejectUser = (req, res) => {
+export const rejectUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = User.findById(id);
+    const user = await User.findById(id);
     
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -140,11 +140,10 @@ export const rejectUser = (req, res) => {
       return res.status(400).json({ error: 'Cannot reject an approved user' });
     }
 
-    User.rejectUser(id);
+    await User.rejectUser(id);
     res.json({ message: 'User rejected and removed' });
   } catch (error) {
     console.error('Reject user error:', error);
     res.status(500).json({ error: 'Failed to reject user' });
   }
 };
-

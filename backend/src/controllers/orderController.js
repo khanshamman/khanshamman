@@ -2,7 +2,7 @@ import { Order } from '../models/Order.js';
 import { Product } from '../models/Product.js';
 import { User } from '../models/User.js';
 
-export const createOrder = (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const { client_name, client_email, client_phone, client_location, notes, items } = req.body;
 
@@ -15,7 +15,7 @@ export const createOrder = (req, res) => {
     const orderItems = [];
 
     for (const item of items) {
-      const product = Product.findById(item.product_id);
+      const product = await Product.findById(item.product_id);
       if (!product) {
         return res.status(400).json({ error: `Product with ID ${item.product_id} not found` });
       }
@@ -24,7 +24,7 @@ export const createOrder = (req, res) => {
       }
 
       const quantity = parseInt(item.quantity) || 1;
-      const unit_price = product.price;
+      const unit_price = parseFloat(product.price);
       total_amount += unit_price * quantity;
 
       orderItems.push({
@@ -34,7 +34,7 @@ export const createOrder = (req, res) => {
       });
     }
 
-    const order = Order.create({
+    const order = await Order.create({
       sales_user_id: req.user.id,
       client_name,
       client_email,
@@ -51,13 +51,13 @@ export const createOrder = (req, res) => {
   }
 };
 
-export const getAllOrders = (req, res) => {
+export const getAllOrders = async (req, res) => {
   try {
     const filters = {};
     if (req.query.status) filters.status = req.query.status;
     if (req.query.sales_user_id) filters.sales_user_id = parseInt(req.query.sales_user_id);
 
-    const orders = Order.findAll(filters);
+    const orders = await Order.findAll(filters);
     res.json(orders);
   } catch (error) {
     console.error('Get orders error:', error);
@@ -65,12 +65,12 @@ export const getAllOrders = (req, res) => {
   }
 };
 
-export const getMyOrders = (req, res) => {
+export const getMyOrders = async (req, res) => {
   try {
     const filters = { sales_user_id: req.user.id };
     if (req.query.status) filters.status = req.query.status;
 
-    const orders = Order.findAll(filters);
+    const orders = await Order.findAll(filters);
     res.json(orders);
   } catch (error) {
     console.error('Get my orders error:', error);
@@ -78,9 +78,9 @@ export const getMyOrders = (req, res) => {
   }
 };
 
-export const getOrder = (req, res) => {
+export const getOrder = async (req, res) => {
   try {
-    const order = Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
@@ -97,7 +97,7 @@ export const getOrder = (req, res) => {
   }
 };
 
-export const updateOrderStatus = (req, res) => {
+export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
@@ -106,12 +106,12 @@ export const updateOrderStatus = (req, res) => {
       return res.status(400).json({ error: 'Valid status is required' });
     }
 
-    const order = Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    const updatedOrder = Order.updateStatus(req.params.id, status);
+    const updatedOrder = await Order.updateStatus(req.params.id, status);
     res.json(updatedOrder);
   } catch (error) {
     console.error('Update order status error:', error);
@@ -119,9 +119,9 @@ export const updateOrderStatus = (req, res) => {
   }
 };
 
-export const getNotificationCount = (req, res) => {
+export const getNotificationCount = async (req, res) => {
   try {
-    const count = Order.countUnnotified();
+    const count = await Order.countUnnotified();
     res.json({ count });
   } catch (error) {
     console.error('Get notification count error:', error);
@@ -129,9 +129,9 @@ export const getNotificationCount = (req, res) => {
   }
 };
 
-export const getUnnotifiedOrders = (req, res) => {
+export const getUnnotifiedOrders = async (req, res) => {
   try {
-    const orders = Order.findUnnotified();
+    const orders = await Order.findUnnotified();
     res.json(orders);
   } catch (error) {
     console.error('Get unnotified orders error:', error);
@@ -139,9 +139,9 @@ export const getUnnotifiedOrders = (req, res) => {
   }
 };
 
-export const markOrderNotified = (req, res) => {
+export const markOrderNotified = async (req, res) => {
   try {
-    Order.markAsNotified(req.params.id);
+    await Order.markAsNotified(req.params.id);
     res.json({ message: 'Order marked as notified' });
   } catch (error) {
     console.error('Mark order notified error:', error);
@@ -149,9 +149,9 @@ export const markOrderNotified = (req, res) => {
   }
 };
 
-export const markAllOrdersNotified = (req, res) => {
+export const markAllOrdersNotified = async (req, res) => {
   try {
-    Order.markAllAsNotified();
+    await Order.markAllAsNotified();
     res.json({ message: 'All orders marked as notified' });
   } catch (error) {
     console.error('Mark all orders notified error:', error);
@@ -159,9 +159,9 @@ export const markAllOrdersNotified = (req, res) => {
   }
 };
 
-export const getSalesUsers = (req, res) => {
+export const getSalesUsers = async (req, res) => {
   try {
-    const users = User.findAllSales();
+    const users = await User.findAllSales();
     res.json(users);
   } catch (error) {
     console.error('Get sales users error:', error);
@@ -169,9 +169,9 @@ export const getSalesUsers = (req, res) => {
   }
 };
 
-export const deleteOrder = (req, res) => {
+export const deleteOrder = async (req, res) => {
   try {
-    const order = Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
@@ -181,11 +181,10 @@ export const deleteOrder = (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    Order.delete(req.params.id);
+    await Order.delete(req.params.id);
     res.json({ message: 'Order deleted successfully' });
   } catch (error) {
     console.error('Delete order error:', error);
     res.status(500).json({ error: 'Failed to delete order' });
   }
 };
-

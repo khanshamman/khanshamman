@@ -1,4 +1,4 @@
-import { run, queryAll, saveDatabase, initDatabase } from '../config/database.js';
+import { run, queryAll, initDatabase } from '../config/database.js';
 
 // Initialize database first
 await initDatabase();
@@ -103,26 +103,26 @@ const products = [
   { name: 'Shampoo', category: 'Other', wholesale_price: 4.5, price: 6.5 },
 ];
 
-export async function seedProducts() {
+async function seedProducts() {
   console.log('Starting product seed...');
   
   // Check if products already exist
-  const existingProducts = queryAll('SELECT COUNT(*) as count FROM products');
-  if (existingProducts[0].count > 0) {
+  const existingProducts = await queryAll('SELECT COUNT(*) as count FROM products');
+  if (parseInt(existingProducts[0].count) > 0) {
     console.log(`Database already has ${existingProducts[0].count} products.`);
     const answer = process.argv.includes('--force');
     if (!answer) {
       console.log('Use --force flag to clear existing products and re-seed.');
-      return;
+      process.exit(0);
     }
     console.log('Clearing existing products...');
-    run('DELETE FROM products');
+    await run('DELETE FROM products');
   }
 
   let added = 0;
   for (const product of products) {
     try {
-      run(
+      await run(
         `INSERT INTO products (name, description, category, price, wholesale_price, stock_quantity, active)
          VALUES (?, ?, ?, ?, ?, ?, 1)`,
         [
@@ -141,10 +141,9 @@ export async function seedProducts() {
     }
   }
 
-  saveDatabase();
   console.log(`\nSuccessfully added ${added} products!`);
 }
 
-// Run if called directly
+// Run
 await seedProducts();
 process.exit(0);

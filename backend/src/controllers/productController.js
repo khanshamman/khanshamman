@@ -1,8 +1,8 @@
 import { Product } from '../models/Product.js';
 
-export const getAllProducts = (req, res) => {
+export const getAllProducts = async (req, res) => {
   try {
-    const products = Product.findAll();
+    const products = await Product.findAll();
     res.json(products);
   } catch (error) {
     console.error('Get products error:', error);
@@ -10,9 +10,9 @@ export const getAllProducts = (req, res) => {
   }
 };
 
-export const getActiveProducts = (req, res) => {
+export const getActiveProducts = async (req, res) => {
   try {
-    const products = Product.findActive();
+    const products = await Product.findActive();
     res.json(products);
   } catch (error) {
     console.error('Get active products error:', error);
@@ -20,9 +20,9 @@ export const getActiveProducts = (req, res) => {
   }
 };
 
-export const getProduct = (req, res) => {
+export const getProduct = async (req, res) => {
   try {
-    const product = Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -33,7 +33,7 @@ export const getProduct = (req, res) => {
   }
 };
 
-export const createProduct = (req, res) => {
+export const createProduct = async (req, res) => {
   try {
     const { name, description, price, wholesale_price, stock_quantity, image_url, category, active } = req.body;
 
@@ -41,7 +41,7 @@ export const createProduct = (req, res) => {
       return res.status(400).json({ error: 'Name and price are required' });
     }
 
-    const product = Product.create({
+    const product = await Product.create({
       name,
       description,
       price: parseFloat(price),
@@ -59,9 +59,9 @@ export const createProduct = (req, res) => {
   }
 };
 
-export const updateProduct = (req, res) => {
+export const updateProduct = async (req, res) => {
   try {
-    const existing = Product.findById(req.params.id);
+    const existing = await Product.findById(req.params.id);
     if (!existing) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -78,7 +78,7 @@ export const updateProduct = (req, res) => {
     if (category !== undefined) updateData.category = category;
     if (active !== undefined) updateData.active = active;
 
-    const product = Product.update(req.params.id, updateData);
+    const product = await Product.update(req.params.id, updateData);
     res.json(product);
   } catch (error) {
     console.error('Update product error:', error);
@@ -86,14 +86,14 @@ export const updateProduct = (req, res) => {
   }
 };
 
-export const deleteProduct = (req, res) => {
+export const deleteProduct = async (req, res) => {
   try {
-    const existing = Product.findById(req.params.id);
+    const existing = await Product.findById(req.params.id);
     if (!existing) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    Product.delete(req.params.id);
+    await Product.delete(req.params.id);
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Delete product error:', error);
