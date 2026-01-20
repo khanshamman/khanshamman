@@ -1,19 +1,35 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { v2 as cloudinary } from 'cloudinary';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
 import { authenticate, requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+// Upload directory - use environment variable or default to ./uploads
+const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+const UPLOAD_URL_BASE = process.env.UPLOAD_URL_BASE || '/uploads';
+
+// Ensure upload directory exists
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  console.log('Created upload directory:', UPLOAD_DIR);
+}
+
+// Configure multer for disk storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOAD_DIR);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename with original extension
+    const uniqueId = crypto.randomBytes(16).toString('hex');
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uniqueId}${ext}`);
+  }
 });
 
-// Configure multer for memory storage
-const storage = multer.memoryStorage();
 const upload = multer({
   storage,
   limits: {
@@ -21,10 +37,11 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     // Accept only images
-    if (file.mimetype.startsWith('image/')) {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'), false);
+      cb(new Error('Only image files are allowed (JPEG, PNG, GIF, WebP)'), false);
     }
   }
 });
@@ -36,39 +53,21 @@ router.post('/image', authenticate, requireAdmin, upload.single('image'), async 
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    // Check if Cloudinary is configured
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      return res.status(500).json({ 
-        error: 'Image upload not configured. Please set up Cloudinary environment variables.' 
-      });
+    // Construct the full URL for the uploaded file
+    // In production, use BACKEND_URL env var to build absolute URL
+    let imageUrl;
+    if (process.env.BACKEND_URL) {
+      imageUrl = `${process.env.BACKEND_URL}/uploads/${req.file.filename}`;
+    } else {
+      imageUrl = `${UPLOAD_URL_BASE}/${req.file.filename}`;
     }
 
-    // Upload to Cloudinary
-    const uploadPromise = new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'khanshamman-products',
-          transformation: [
-            { width: 800, height: 800, crop: 'limit' },
-            { quality: 'auto:good' },
-            { format: 'auto' }
-          ]
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-
-      uploadStream.end(req.file.buffer);
-    });
-
-    const result = await uploadPromise;
+    console.log('Image uploaded:', req.file.filename, 'URL:', imageUrl);
 
     res.json({
       success: true,
-      url: result.secure_url,
-      public_id: result.public_id
+      url: imageUrl,
+      filename: req.file.filename
     });
   } catch (error) {
     console.error('Upload error:', error);
@@ -76,17 +75,25 @@ router.post('/image', authenticate, requireAdmin, upload.single('image'), async 
   }
 });
 
-// Delete image endpoint (optional, for cleanup)
+// Delete image endpoint
 router.delete('/image', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { public_id } = req.body;
+    const { filename } = req.body;
     
-    if (!public_id) {
-      return res.status(400).json({ error: 'No public_id provided' });
+    if (!filename) {
+      return res.status(400).json({ error: 'No filename provided' });
     }
 
-    await cloudinary.uploader.destroy(public_id);
-    res.json({ success: true, message: 'Image deleted' });
+    // Security: Only allow deleting files in the upload directory
+    const filePath = path.join(UPLOAD_DIR, path.basename(filename));
+    
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log('Image deleted:', filename);
+      res.json({ success: true, message: 'Image deleted' });
+    } else {
+      res.status(404).json({ error: 'Image not found' });
+    }
   } catch (error) {
     console.error('Delete error:', error);
     res.status(500).json({ error: 'Failed to delete image' });

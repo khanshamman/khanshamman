@@ -1,13 +1,21 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { initDatabase } from './config/database.js';
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
 import uploadRoutes from './routes/upload.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Upload directory for serving static files
+const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 
 // CORS configuration - allow frontend URL in production
 const corsOptions = {
@@ -48,6 +56,9 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Serve uploaded images statically
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 // Routes
 app.use('/api/auth', authRoutes);

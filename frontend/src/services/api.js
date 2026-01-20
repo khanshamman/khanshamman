@@ -64,7 +64,7 @@ export const uploadApi = {
     formData.append('image', file);
     
     const token = localStorage.getItem('token');
-    const response = await axios.post(``${API_BASE_URL}/upload/image``, formData, {
+    const response = await axios.post(`${API_BASE_URL}/upload/image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${token}`
@@ -72,5 +72,7 @@ export const uploadApi = {
     });
     return response;
   },
-  deleteImage: (publicId) => api.delete('/upload/image', { data: { public_id: publicId } })
+  deleteImage: (filename) => api.delete('/upload/image', { data: { filename } })
 };
+
+
