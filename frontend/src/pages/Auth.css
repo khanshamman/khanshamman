@@ -1,11 +1,20 @@
 .auth-container {
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
   position: relative;
   overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 0.75rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
 }
 
 .auth-background {
@@ -43,6 +52,31 @@
   position: relative;
   z-index: 1;
   box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+  }
+  
+  .auth-brand-logo {
+    height: 80px !important;
+  }
+  
+  .auth-logo {
+    font-size: 2rem;
+  }
+  
+  .login-type-btn {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .login-type-btn svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .auth-header {

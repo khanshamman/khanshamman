@@ -12,7 +12,7 @@ const Logo = () => (
     alt="Khan Shamman" 
     className="brand-logo"
     style={{ 
-      height: '100px', 
+      height: '80px', 
       width: 'auto', 
       objectFit: 'contain', 
       borderRadius: '50%',
@@ -26,6 +26,7 @@ const Layout = () => {
   const navigate = useNavigate();
   const [notificationCount, setNotificationCount] = useState(0);
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -38,6 +39,34 @@ const Layout = () => {
       return () => clearInterval(interval);
     }
   }, [isAdmin]);
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [navigate]);
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sidebarOpen && !e.target.closest('.sidebar') && !e.target.closest('.mobile-menu-btn')) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [sidebarOpen]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
 
   const fetchNotifications = async () => {
     try {
@@ -62,18 +91,56 @@ const Layout = () => {
     navigate('/login');
   };
 
+  const handleNavClick = () => {
+    setSidebarOpen(false);
+  };
+
   const basePath = isAdmin ? '/admin' : '/sales';
 
   return (
     <div className="layout">
-      <aside className="sidebar">
+      {/* Mobile Header */}
+      <header className="mobile-header">
+        <button 
+          className="mobile-menu-btn" 
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle menu"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            {sidebarOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </>
+            )}
+          </svg>
+        </button>
+        <div className="mobile-header-brand">
+          <Logo />
+        </div>
+        <span className="role-badge mobile-role">{user.role}</span>
+      </header>
+
+      {/* Sidebar Overlay */}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} 
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <Logo />
           <span className="role-badge">{user.role}</span>
         </div>
         
         <nav className="nav">
-          <NavLink to={basePath} end className="nav-link">
+          <NavLink to={basePath} end className="nav-link" onClick={handleNavClick}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               <polyline points="9,22 9,12 15,12 15,22"/>
@@ -83,7 +150,7 @@ const Layout = () => {
           
           {isAdmin ? (
             <>
-              <NavLink to={`${basePath}/orders`} className="nav-link">
+              <NavLink to={`${basePath}/orders`} className="nav-link" onClick={handleNavClick}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14,2 14,8 20,8"/>
@@ -95,7 +162,7 @@ const Layout = () => {
                   <span className="notification-badge">{notificationCount}</span>
                 )}
               </NavLink>
-              <NavLink to={`${basePath}/products`} className="nav-link">
+              <NavLink to={`${basePath}/products`} className="nav-link" onClick={handleNavClick}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                   <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
@@ -103,7 +170,7 @@ const Layout = () => {
                 </svg>
                 Products
               </NavLink>
-              <NavLink to={`${basePath}/users`} className="nav-link">
+              <NavLink to={`${basePath}/users`} className="nav-link" onClick={handleNavClick}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                   <circle cx="9" cy="7" r="4"/>
@@ -118,7 +185,7 @@ const Layout = () => {
             </>
           ) : (
             <>
-              <NavLink to={`${basePath}/products`} className="nav-link">
+              <NavLink to={`${basePath}/products`} className="nav-link" onClick={handleNavClick}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                   <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
@@ -126,7 +193,7 @@ const Layout = () => {
                 </svg>
                 Products
               </NavLink>
-              <NavLink to={`${basePath}/new-order`} className="nav-link">
+              <NavLink to={`${basePath}/new-order`} className="nav-link" onClick={handleNavClick}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="9" cy="21" r="1"/>
                   <circle cx="20" cy="21" r="1"/>
@@ -134,7 +201,7 @@ const Layout = () => {
                 </svg>
                 New Order
               </NavLink>
-              <NavLink to={`${basePath}/orders`} className="nav-link">
+              <NavLink to={`${basePath}/orders`} className="nav-link" onClick={handleNavClick}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14,2 14,8 20,8"/>

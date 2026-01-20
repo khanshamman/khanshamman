@@ -508,3 +508,89 @@ button {
   margin-bottom: 1rem;
 }
 
+
+/* Mobile-specific global styles */
+@media (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .btn {
+    padding: 0.75rem 1rem;
+  }
+  
+  .btn-lg {
+    padding: 0.875rem 1.25rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 0.625rem 0.875rem;
+    font-size: 16px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
+  
+  .nav-link {
+    min-height: 48px;
+  }
+  
+  .form-input,
+  .form-select {
+    min-height: 44px;
+  }
+}
