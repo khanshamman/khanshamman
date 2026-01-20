@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { productApi } from '../../services/api';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { productApi, uploadApi } from '../../services/api';
 import './Admin.css';
 
 // Predefined categories
@@ -37,6 +37,10 @@ const AdminProducts = () => {
   });
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchProducts();
@@ -83,6 +87,7 @@ const AdminProducts = () => {
         image_url: product.image_url || '',
         active: !!product.active
       });
+      setImagePreview(product.image_url || null);
     } else {
       setEditingProduct(null);
       setFormData({
@@ -95,6 +100,7 @@ const AdminProducts = () => {
         image_url: '',
         active: true
       });
+      setImagePreview(null);
     }
     setFormError('');
     setShowModal(true);
@@ -104,6 +110,7 @@ const AdminProducts = () => {
     setShowModal(false);
     setEditingProduct(null);
     setFormError('');
+    setImagePreview(null);
   };
 
   const handleChange = (e) => {
@@ -112,6 +119,81 @@ const AdminProducts = () => {
       ...formData,
       [name]: type === 'checkbox' ? checked : value
     });
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setFormError('Please select an image file (JPEG, PNG, GIF, etc.)');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setFormError('Image must be less than 5MB');
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploading(true);
+    setFormError('');
+
+    try {
+      const response = await uploadApi.uploadImage(file);
+      setFormData(prev => ({ ...prev, image_url: response.data.url }));
+      setImagePreview(response.data.url);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setFormError(error.response?.data?.error || 'Failed to upload image. You can still enter a URL manually.');
+      setImagePreview(null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileInput = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileUpload(e.target.files[0]);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setFormData(prev => ({ ...prev, image_url: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -150,7 +232,7 @@ const AdminProducts = () => {
   };
 
   const handleDelete = async (product) => {
-    if (!confirm(`Are you sure you want to delete "${product.name}"?`)) {
+    if (!window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
       return;
     }
 
@@ -399,16 +481,75 @@ const AdminProducts = () => {
                 />
               </div>
 
+              {/* Image Upload Section */}
               <div className="form-group">
-                <label className="form-label">Image URL (Optional)</label>
+                <label className="form-label">Product Image</label>
+                
+                {/* Drag and Drop Zone */}
+                <div 
+                  className={`image-upload-zone ${dragActive ? 'drag-active' : ''} ${imagePreview ? 'has-image' : ''}`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  onClick={() => !imagePreview && fileInputRef.current?.click()}
+                >
+                  {uploading ? (
+                    <div className="upload-loading">
+                      <div className="upload-spinner"></div>
+                      <p>Uploading image...</p>
+                    </div>
+                  ) : imagePreview ? (
+                    <div className="image-preview-container">
+                      <img src={imagePreview} alt="Preview" className="image-preview" />
+                      <button 
+                        type="button" 
+                        className="remove-image-btn"
+                        onClick={(e) => { e.stopPropagation(); removeImage(); }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18"/>
+                          <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="upload-placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                      <p className="upload-text">Drag & drop an image here</p>
+                      <p className="upload-hint">or click to select a file</p>
+                      <p className="upload-size">Max size: 5MB (JPEG, PNG, GIF)</p>
+                    </div>
+                  )}
+                </div>
+                
                 <input
-                  type="url"
-                  name="image_url"
-                  className="form-input"
-                  value={formData.image_url}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileInput}
+                  style={{ display: 'none' }}
                 />
+
+                {/* URL Input as fallback */}
+                <div className="url-input-fallback">
+                  <span className="url-divider">or enter image URL</span>
+                  <input
+                    type="url"
+                    name="image_url"
+                    className="form-input"
+                    value={formData.image_url}
+                    onChange={(e) => {
+                      handleChange(e);
+                      setImagePreview(e.target.value || null);
+                    }}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
               </div>
 
               <div className="form-group">
@@ -428,7 +569,7 @@ const AdminProducts = () => {
                 <button type="button" onClick={closeModal} className="btn btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
+                <button type="submit" className="btn btn-primary" disabled={saving || uploading}>
                   {saving ? 'Saving...' : (editingProduct ? 'Update Product' : 'Add Product')}
                 </button>
               </div>

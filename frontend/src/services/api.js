@@ -56,3 +56,21 @@ export const orderApi = {
   getSalesUsers: () => api.get('/orders/admin/sales-users')
 };
 
+
+// Upload API
+export const uploadApi = {
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const token = localStorage.getItem('token');
+    const response = await axios.post(``${API_BASE_URL}/upload/image``, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    return response;
+  },
+  deleteImage: (publicId) => api.delete('/upload/image', { data: { public_id: publicId } })
+};
