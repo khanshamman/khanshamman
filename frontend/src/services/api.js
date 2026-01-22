@@ -56,7 +56,6 @@ export const orderApi = {
   getSalesUsers: () => api.get('/orders/admin/sales-users')
 };
 
-
 // Upload API
 export const uploadApi = {
   uploadImage: async (file) => {
@@ -72,7 +71,5 @@ export const uploadApi = {
     });
     return response;
   },
-  deleteImage: (filename) => api.delete('/upload/image', { data: { filename } })
+  deleteImage: (publicId) => api.delete('/upload/image', { data: { public_id: publicId } })
 };
-
-
