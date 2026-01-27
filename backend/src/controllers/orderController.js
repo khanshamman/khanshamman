@@ -24,7 +24,8 @@ export const createOrder = async (req, res) => {
       }
 
       const quantity = parseInt(item.quantity) || 1;
-      const unit_price = parseFloat(product.price);
+      // Use unit_price from request if provided (for wholesale/retail), otherwise use product.price
+      const unit_price = item.unit_price !== undefined ? parseFloat(item.unit_price) : parseFloat(product.price);
       total_amount += unit_price * quantity;
 
       orderItems.push({
